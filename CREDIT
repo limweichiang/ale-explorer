@@ -1,0 +1,9 @@
+heatmap.js
+==========
+
+heatmap.js is used by ALE Explorer to display generate heatmaps of WiFi devices. It is
+developed by Patrick Wied. No part of it is modified, and is included purely for
+convenience. I do not claim any credit for this really exceptionally neat piece of work.
+
+Please visit his site at https://www.patrick-wied.at/static/heatmapjs/ for more details,
+and do support him if you are using his work in any commercial projects.
