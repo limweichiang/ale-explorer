@@ -90,10 +90,8 @@
 
 		<h1><?php echo $displayFloorName; ?></h1>
 		
-		<!-- Image is at <?php echo $displayFloorImgUrl; ?><br> -->
-		
 		<div id="heatmap">
-			<img id="floorplan" src="<?php echo $displayFloorImgUrl; ?>">
+			<img id="floorplan" src="mapproxy.php?floor_id=<?php echo $requestedFloorId; ?>">
 		</div>
 
 		<?php
@@ -113,7 +111,7 @@
 				// create configuration object
 				var hmconfig = {
 				  container: hmelement,
-				  radius: 20,
+				  radius: 30,
 				  maxOpacity: .4,
 				  minOpacity: 0,
 				  blur: .75
@@ -131,16 +129,13 @@
 						$arrayLenIter++;
 						$xRatioed = $locationRatioed[1];
 						$yRatioed = $locationRatioed[2];			
-						echo "{x: Math.round($xRatioed".'*fpelement.width)'.", y: Math.round($yRatioed".'*fpelement.height)'.", value: 1}";
+						echo "{x: Math.round($xRatioed".'*fpelement.width)'.", y: Math.round($yRatioed".'*fpelement.height)'.", value: 3}";
 						if($arrayLenIter < $arrayLen){
 							echo ", \n";
 						}
 					}
 				?>
 				];
-				
-				<!-- <?php echo 'console.log(fpelement.width);'; ?> -->
-				<!-- <?php echo 'console.log(fpelement.height);'; ?> -->
 				
 				// heatmap data format
 				var data = { 

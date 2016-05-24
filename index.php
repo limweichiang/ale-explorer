@@ -82,7 +82,7 @@
 						echo '<li>'.$buildingIdToNameMapping[$buildingId].'</li><ul id="floor-list">'."\n";
 						
 						foreach($buildingToFloorMapping[$buildingId] as $floorId){
-							echo '<li><a href="/heatmap.php?floor_id='.$floorId.'">'.$floorIdtoNameMapping[$floorId].' - '.$floorId.'</a></li>'."\n";
+							echo '<li><a href="heatmap.php?floor_id='.$floorId.'">'.$floorIdtoNameMapping[$floorId].' - '.$floorId.'</a></li>'."\n";
 						}
 						echo '</ul>';
 					}
