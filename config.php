@@ -1,9 +1,12 @@
 <?php
 	// Config Variables
-	$aleIp = "ip.here";
-	$aleUname = "username.here";
-	$alePasswd = "password.here";
+	$aleIp = "a.b.c.d";
+	$aleUname = "jdoe";
+	$alePasswd = "jdoepasswd";
 	
 	// Static Variables
 	$aleUrl = "https://$aleIp";
+	
+	// Should curl verify peer SSL certificate?
+	$verifySsl = false;
 ?>

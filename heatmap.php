@@ -1,5 +1,6 @@
 <?php
 	include 'config.php';
+	include 'curl.php';
 	
 	// Form Variables
 	if(isset($_GET["floor_id"])){
@@ -9,46 +10,31 @@
 	// Page Variables
 	$aleFloorApiUrl = "$aleUrl/api/v1/floor";
 	$aleLocationApiUrl = "$aleUrl/api/v1/location";
+	$aleBuildingApiUrl = "$aleUrl/api/v1/building";
+	$aleCampusApiUrl = "$aleUrl/api/v1/campus";
 	
 	// Display Variables
 	$displayFloorImgUrl = "";
 	$displayFloorImgWidth = 0;
 	$displayFloorImgLength = 0;
 	$displayFloorName = "";
+	$displayBuildingName = "";
+	$displayCampusName = "";
 	$locationArray = array();
 	$locationArrayRatioed = array();
 	
-	// Pull Floor Listing
-	$curlFloorReq = curl_init($aleFloorApiUrl);
-	$curlFloorOpt = array(
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_USERPWD => "$aleUname:$alePasswd",
-		CURLOPT_HTTPHEADER => array('Content-type: application/json'),
-		CURLOPT_SSL_VERIFYPEER => false
-	);
 	
-	curl_setopt_array($curlFloorReq, $curlFloorOpt);
-	if(! $floorJsonStr = curl_exec($curlFloorReq)){
-		trigger_error(curl_error($curlFloorReq)); 
-	}
-	curl_close($curlFloorReq);
-	$floorObj = json_decode($floorJsonStr);
+	// Pull Campus listing
+	$campusObj = curl_get_json($aleCampusApiUrl, $aleUname, $alePasswd);
+	
+	// Pull Building Listing
+	$buildingObj = curl_get_json($aleBuildingApiUrl, $aleUname, $alePasswd);
+	
+	// Pull Floor Listing
+	$floorObj = curl_get_json($aleFloorApiUrl, $aleUname, $alePasswd);
 	
 	// Pull Location Listing
-	$curlLocationReq = curl_init($aleLocationApiUrl);
-	$curlLocationOpt = array(
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_USERPWD => "$aleUname:$alePasswd",
-		CURLOPT_HTTPHEADER => array('Content-type: application/json'),
-		CURLOPT_SSL_VERIFYPEER => false
-	);
-	
-	curl_setopt_array($curlLocationReq, $curlLocationOpt);
-	if(! $locationJsonStr = curl_exec($curlLocationReq)){
-		trigger_error(curl_error($curlLocationReq)); 
-	}
-	curl_close($curlLocationReq);
-	$locationObj = json_decode($locationJsonStr);
+	$locationObj = curl_get_json($aleLocationApiUrl, $aleUname, $alePasswd);
 	
 	// Search for requested floor based floor_id
 	foreach($floorObj->Floor_result as $floorRes){
@@ -59,6 +45,26 @@
 			$displayFloorImgUrl = $aleUrl.$floorMsg->floor_img_path;
 			$displayFloorImgWidth = $floorMsg->floor_img_width;
 			$displayFloorImgLength = $floorMsg->floor_img_length;
+			$requestedBuildingId = $floorMsg->building_id;
+		}
+	}
+	
+	// Search for requested building based building_id
+	foreach($buildingObj->Building_result as $buildingRes){
+		$buildingMsg = $buildingRes->msg;
+		
+		if($buildingMsg->building_id == $requestedBuildingId){
+			$displayBuildingName = $buildingMsg->building_name;
+			$requestedCampusId = $buildingMsg->campus_id;
+		}
+	}
+	
+	// Search for requested campus based campus_id
+	foreach($campusObj->Campus_result as $campusRes){
+		$campusMsg = $campusRes->msg;
+		
+		if($campusMsg->campus_id == $requestedCampusId){
+			$displayCampusName = $campusMsg->campus_name;
 		}
 	}
 	
@@ -88,20 +94,23 @@
 
 	<body>
 
-		<h1><?php echo $displayFloorName; ?></h1>
+		<h1><?php echo $displayCampusName." - ".$displayBuildingName." - ".$displayFloorName; ?></h1>
 		
 		<div id="heatmap">
 			<img id="floorplan" src="mapproxy.php?floor_id=<?php echo $requestedFloorId; ?>">
 		</div>
 
-		<?php
-			foreach($locationArray as $location){
-				$staMac = $location[0];
-				$staLocX = $location[1];
-				$staLocY = $location[2];			
-				echo "Device $staMac is at x: $staLocX, y: $staLocY".'<br>'."\n";
-			}		
-		?>
+		<table>
+			<tr><td>Device MAC Address</td><td>x-Coordinate</td><td>y-Coordinate</td></tr>
+			<?php
+				foreach($locationArray as $location){
+					$staMac = $location[0];
+					$staLocX = $location[1];
+					$staLocY = $location[2];			
+					echo '<tr><td>'.$staMac.'</td><td>'.$staLocX.'</td><td>'.$staLocY.'</td></tr>'."\n";
+				}		
+			?>
+		</table>
 		
 		<script type="text/javascript">
 			window.onload = function(){
@@ -111,7 +120,7 @@
 				// create configuration object
 				var hmconfig = {
 				  container: hmelement,
-				  radius: 30,
+				  radius: 20,
 				  maxOpacity: .4,
 				  minOpacity: 0,
 				  blur: .75
@@ -129,7 +138,7 @@
 						$arrayLenIter++;
 						$xRatioed = $locationRatioed[1];
 						$yRatioed = $locationRatioed[2];			
-						echo "{x: Math.round($xRatioed".'*fpelement.width)'.", y: Math.round($yRatioed".'*fpelement.height)'.", value: 3}";
+						echo "{x: Math.round($xRatioed".'*fpelement.width)'.", y: Math.round($yRatioed".'*fpelement.height)'.", value: 2}";
 						if($arrayLenIter < $arrayLen){
 							echo ", \n";
 						}
