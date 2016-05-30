@@ -77,45 +77,51 @@
 			$staMac = $locationMsg->sta_eth_mac->addr;
 			$staLocX = $locationMsg->sta_location_x;
 			$staLocY = $locationMsg->sta_location_y;
-			$locationArray[] = array($staMac, $staLocX, $staLocY);
+			$timestamp = $locationRes->ts;
+			$timestampStr = date('r', $timestamp);
+			$locationArray[] = array('timestamp' => $timestampStr, 'staMac' => $staMac, 'staLocX' => $staLocX, 'staLocY' => $staLocY);
 			
 			// Calculating and storing coordinates as a ratio over floor dimensions
 			$staLocXRatioed = $staLocX/$displayFloorImgWidth;
 			$staLocYRatioed = $staLocY/$displayFloorImgLength;
-			$locationArrayRatioed[] = array($staMac, $staLocXRatioed, $staLocYRatioed);
+			$locationArrayRatioed[] = array('staMac' => $staMac, 'staLocXRatioed' => $staLocXRatioed, 'staLocYRatioed' => $staLocYRatioed);
 		}
 	}
 ?>
 
 <html>
 	<head>
-		<script type="text/javascript" src="src/heatmap.js"></script>		
+		<script type="text/javascript" src="src/heatmap.js"></script>
+		<link rel="stylesheet" type="text/css" href="ale-explorer.css">
 	</head>
 
 	<body>
 
 		<h1><?php echo $displayCampusName." - ".$displayBuildingName." - ".$displayFloorName; ?></h1>
 		
-		<div id="heatmap">
-			<img id="floorplan" src="mapproxy.php?floor_id=<?php echo $requestedFloorId; ?>">
+		<div id="map-container">
+			<div id="map-overlay">
+				<img id="map" src="mapproxy.php?floor_id=<?php echo $requestedFloorId; ?>">
+			</div>
 		</div>
 
 		<table>
-			<tr><td>Device MAC Address</td><td>x-Coordinate</td><td>y-Coordinate</td></tr>
+			<tr><td>Time Calculated</td><td>Device MAC Address</td><td>x-Coordinate</td><td>y-Coordinate</td></tr>
 			<?php
 				foreach($locationArray as $location){
-					$staMac = $location[0];
-					$staLocX = $location[1];
-					$staLocY = $location[2];			
-					echo '<tr><td>'.$staMac.'</td><td>'.$staLocX.'</td><td>'.$staLocY.'</td></tr>'."\n";
+					$staMac = $location['staMac'];
+					$staLocX = $location['staLocX'];
+					$staLocY = $location['staLocY'];
+					$timestampStr = $location['timestamp'];		
+					echo '<tr><td>'.$timestampStr.'</td><td>'.$staMac.'</td><td>'.$staLocX.'</td><td>'.$staLocY.'</td></tr>'."\n";
 				}		
 			?>
 		</table>
 		
 		<script type="text/javascript">
 			window.onload = function(){
-				var fpelement = document.getElementById('floorplan');
-				var hmelement = document.getElementById('heatmap');
+				var fpelement = document.getElementById('map');
+				var hmelement = document.getElementById('map-overlay');
 
 				// create configuration object
 				var hmconfig = {
@@ -136,8 +142,8 @@
 					$arrayLenIter = 0;
 					foreach($locationArrayRatioed as $locationRatioed){
 						$arrayLenIter++;
-						$xRatioed = $locationRatioed[1];
-						$yRatioed = $locationRatioed[2];			
+						$xRatioed = $locationRatioed['staLocXRatioed'];
+						$yRatioed = $locationRatioed['staLocYRatioed'];			
 						echo "{x: Math.round($xRatioed".'*fpelement.width)'.", y: Math.round($yRatioed".'*fpelement.height)'.", value: 2}";
 						if($arrayLenIter < $arrayLen){
 							echo ", \n";
